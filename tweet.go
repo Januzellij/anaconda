@@ -162,21 +162,24 @@ func escapeUrl(url string) string {
 	return strings.Replace(url, "/", `\/`, -1)
 }
 
-func escapeEntityUrls(entity struct {
+func escapeEntityUrls(entities []struct {
 	Indices      []int
 	Url          string
 	Display_url  string
 	Expanded_url string
-}) struct {
+}) []struct {
 	Indices      []int
 	Url          string
 	Display_url  string
 	Expanded_url string
 } {
-	entity.Url = escapeUrl(entity.Url)
-	entity.Display_url = escapeUrl(entity.Display_url)
-	entity.Expanded_url = escapeUrl(entity.Expanded_url)
-	return entity
+	for i, v := range entities {
+		v.Url = escapeUrl(v.Url)
+		v.Display_url = escapeUrl(v.Display_url)
+		v.Expanded_url = escapeUrl(v.Expanded_url)
+		entities[i] = v
+	}
+	return entities
 }
 
 func escapeUserUrls(u User) User {
