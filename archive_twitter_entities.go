@@ -31,9 +31,3 @@ type ArchiveEntities struct {
 		Indices         []int
 	}
 }
-
-type MediaSize struct {
-	W      int
-	H      int
-	Resize string
-}
