@@ -26,17 +26,10 @@ type Entities struct {
 		Url             string
 		Display_url     string
 		Expanded_url    string
-		Sizes           MediaSizes
+		Sizes           []MediaSize
 		Type            string
 		Indices         []int
 	}
-}
-
-type MediaSizes struct {
-	Medium MediaSize
-	Thumb  MediaSize
-	Small  MediaSize
-	Large  MediaSize
 }
 
 type MediaSize struct {
