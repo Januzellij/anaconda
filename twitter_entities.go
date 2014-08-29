@@ -2,45 +2,45 @@ package anaconda
 
 type Entities struct {
 	Hashtags []struct {
-		Indices []int  `json:",omitempty"`
-		Text    string `json:",omitempty"`
+		Indices []int
+		Text    string
 	}
 	Urls []struct {
-		Indices      []int  `json:",omitempty"`
-		Url          string `json:",omitempty"`
-		Display_url  string `json:",omitempty"`
-		Expanded_url string `json:",omitempty"`
+		Indices      []int
+		Url          string
+		Display_url  string
+		Expanded_url string
 	}
 	User_mentions []struct {
-		Name        string `json:",omitempty"`
-		Indices     []int  `json:",omitempty"`
-		Screen_name string `json:",omitempty"`
-		Id          int64  `json:",omitempty"`
-		Id_str      string `json:",omitempty"`
+		Name        string
+		Indices     []int
+		Screen_name string
+		Id          int64
+		Id_str      string
 	}
 	Media []struct {
-		Id              int64      `json:",omitempty"`
-		Id_str          string     `json:",omitempty"`
-		Media_url       string     `json:",omitempty"`
-		Media_url_https string     `json:",omitempty"`
-		Url             string     `json:",omitempty"`
-		Display_url     string     `json:",omitempty"`
-		Expanded_url    string     `json:",omitempty"`
-		Sizes           MediaSizes `json:",omitempty"`
-		Type            string     `json:",omitempty"`
-		Indices         []int      `json:",omitempty"`
+		Id              int64
+		Id_str          string
+		Media_url       string
+		Media_url_https string
+		Url             string
+		Display_url     string
+		Expanded_url    string
+		Sizes           MediaSizes
+		Type            string
+		Indices         []int
 	}
 }
 
 type MediaSizes struct {
-	Medium MediaSize `json:",omitempty"`
-	Thumb  MediaSize `json:",omitempty"`
-	Small  MediaSize `json:",omitempty"`
-	Large  MediaSize `json:",omitempty"`
+	Medium MediaSize
+	Thumb  MediaSize
+	Small  MediaSize
+	Large  MediaSize
 }
 
 type MediaSize struct {
-	W      int    `json:",omitempty"`
-	H      int    `json:",omitempty"`
-	Resize string `json:",omitempty"`
+	W      int
+	H      int
+	Resize string
 }
