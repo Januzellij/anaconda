@@ -34,3 +34,142 @@ type Tweet struct {
 func (t Tweet) CreatedAtTime() (time.Time, error) {
 	return time.Parse(time.RubyDate, t.CreatedAt)
 }
+
+// this is neccesary because there is *one minute difference* between Twitter API and archive JSON
+// See: https://github.com/Januzellij/anaconda/commit/9c9e6a07f65ea957b3107bee70c33c4f771e6577
+func convertToArchive(tweets []Tweet) []ArchiveTweet {
+	archiveTweets := make([]ArchiveTweet, len(tweets))
+	for i, tweet := range tweets {
+		archiveTweet := ArchiveTweet{
+			tweet.Contributors,
+			tweet.Coordinates,
+			tweet.CreatedAt,
+			ArchiveEntities{
+				tweet.Entities.Hashtags,
+				tweet.Entities.Urls,
+				tweet.Entities.User_mentions,
+				convertMediaToArchive(tweet.Entities.Media),
+			},
+			tweet.FavoriteCount,
+			tweet.Favorited,
+			tweet.Geo,
+			tweet.Id,
+			tweet.IdStr,
+			tweet.InReplyToScreenName,
+			tweet.InReplyToStatusID,
+			tweet.InReplyToStatusIdStr,
+			tweet.InReplyToUserID,
+			tweet.InReplyToUserIdStr,
+			tweet.Place,
+			tweet.PossiblySensitive,
+			tweet.RetweetCount,
+			tweet.Retweeted,
+			nil,
+			tweet.Source,
+			tweet.Text,
+			tweet.Truncated,
+			tweet.User,
+		}
+		if tweet.RetweetedStatus != nil {
+			archiveTweet.RetweetedStatus = &ArchiveTweet{
+				tweet.RetweetedStatus.Contributors,
+				tweet.RetweetedStatus.Coordinates,
+				tweet.RetweetedStatus.CreatedAt,
+				ArchiveEntities{
+					tweet.RetweetedStatus.Entities.Hashtags,
+					tweet.RetweetedStatus.Entities.Urls,
+					tweet.RetweetedStatus.Entities.User_mentions,
+					convertMediaToArchive(tweet.RetweetedStatus.Entities.Media),
+				},
+				tweet.RetweetedStatus.FavoriteCount,
+				tweet.RetweetedStatus.Favorited,
+				tweet.RetweetedStatus.Geo,
+				tweet.RetweetedStatus.Id,
+				tweet.RetweetedStatus.IdStr,
+				tweet.RetweetedStatus.InReplyToScreenName,
+				tweet.RetweetedStatus.InReplyToStatusID,
+				tweet.RetweetedStatus.InReplyToStatusIdStr,
+				tweet.RetweetedStatus.InReplyToUserID,
+				tweet.RetweetedStatus.InReplyToUserIdStr,
+				tweet.RetweetedStatus.Place,
+				tweet.RetweetedStatus.PossiblySensitive,
+				tweet.RetweetedStatus.RetweetCount,
+				tweet.RetweetedStatus.Retweeted,
+				nil, // TODO: fix this, so it recursively fills in all retweets
+				tweet.RetweetedStatus.Source,
+				tweet.RetweetedStatus.Text,
+				tweet.RetweetedStatus.Truncated,
+				tweet.RetweetedStatus.User,
+			}
+		}
+		archiveTweet = escapeUrls(archiveTweet)
+		archiveTweets[i] = archiveTweet
+	}
+	return archiveTweets
+}
+
+// yes, all of these anonymous structs are ugly. The anaconda authors chose to make the Entities struct
+// slices slices of anonymous structs (that's quite a mouthful), rather than giving a name to each struct
+// See: https://github.com/ChimeraCoder/anaconda/blob/master/twitter_entities.go
+func convertMediaToArchive(media []struct {
+	Id              int64
+	Id_str          string
+	Media_url       string
+	Media_url_https string
+	Url             string
+	Display_url     string
+	Expanded_url    string
+	Sizes           MediaSizes
+	Type            string
+	Indices         []int
+}) []struct {
+	Id              int64
+	Id_str          string
+	Media_url       string
+	Media_url_https string
+	Url             string
+	Display_url     string
+	Expanded_url    string
+	Sizes           []MediaSize
+	Type            string
+	Indices         []int
+} {
+	archiveMedia := make([]struct {
+		Id              int64
+		Id_str          string
+		Media_url       string
+		Media_url_https string
+		Url             string
+		Display_url     string
+		Expanded_url    string
+		Sizes           []MediaSize
+		Type            string
+		Indices         []int
+	}, len(media))
+	for i, v := range media {
+		archiveMedia[i] = struct {
+			Id              int64
+			Id_str          string
+			Media_url       string
+			Media_url_https string
+			Url             string
+			Display_url     string
+			Expanded_url    string
+			Sizes           []MediaSize
+			Type            string
+			Indices         []int
+		}{
+			v.Id,
+			v.Id_str,
+			v.Media_url,
+			v.Media_url_https,
+			v.Url,
+			v.Display_url,
+			v.Expanded_url,
+			[]MediaSize{v.Sizes.Medium, v.Sizes.Thumb, v.Sizes.Small, v.Sizes.Large},
+			v.Type,
+			v.Indices,
+		}
+	}
+	return archiveMedia
+}

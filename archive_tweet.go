@@ -1,8 +1,6 @@
 package anaconda
 
-import (
-	"time"
-)
+import "time"
 
 type ArchiveTweet struct {
 	Contributors         []int64         `json:"contributors"`
