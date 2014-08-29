@@ -1,6 +1,7 @@
 package anaconda
 
 import (
+	"strings"
 	"time"
 )
 
@@ -46,7 +47,7 @@ func convertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.CreatedAt,
 			ArchiveEntities{
 				tweet.Entities.Hashtags,
-				tweet.Entities.Urls,
+				escapeEntityUrls(tweet.Entities.Urls),
 				tweet.Entities.User_mentions,
 				convertMediaToArchive(tweet.Entities.Media),
 			},
@@ -66,9 +67,9 @@ func convertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.Retweeted,
 			nil,
 			tweet.Source,
-			tweet.Text,
+			escapeUrl(tweet.Text),
 			tweet.Truncated,
-			tweet.User,
+			escapeUserUrls(tweet.User),
 		}
 		if tweet.RetweetedStatus != nil {
 			archiveTweet.RetweetedStatus = &ArchiveTweet{
@@ -77,7 +78,7 @@ func convertToArchive(tweets []Tweet) []ArchiveTweet {
 				tweet.RetweetedStatus.CreatedAt,
 				ArchiveEntities{
 					tweet.RetweetedStatus.Entities.Hashtags,
-					tweet.RetweetedStatus.Entities.Urls,
+					escapeEntityUrls(tweet.RetweetedStatus.Entities.Urls),
 					tweet.RetweetedStatus.Entities.User_mentions,
 					convertMediaToArchive(tweet.RetweetedStatus.Entities.Media),
 				},
@@ -97,12 +98,11 @@ func convertToArchive(tweets []Tweet) []ArchiveTweet {
 				tweet.RetweetedStatus.Retweeted,
 				nil, // TODO: fix this, so it recursively fills in all retweets
 				tweet.RetweetedStatus.Source,
-				tweet.RetweetedStatus.Text,
+				escapeUrl(tweet.RetweetedStatus.Text),
 				tweet.RetweetedStatus.Truncated,
-				tweet.RetweetedStatus.User,
+				escapeUserUrls(tweet.RetweetedStatus.User),
 			}
 		}
-		archiveTweet = escapeUrls(archiveTweet)
 		archiveTweets[i] = archiveTweet
 	}
 	return archiveTweets
@@ -147,29 +147,43 @@ func convertMediaToArchive(media []struct {
 		Indices         []int
 	}, len(media))
 	for i, v := range media {
-		archiveMedia[i] = struct {
-			Id              int64
-			Id_str          string
-			Media_url       string
-			Media_url_https string
-			Url             string
-			Display_url     string
-			Expanded_url    string
-			Sizes           []MediaSize
-			Type            string
-			Indices         []int
-		}{
-			v.Id,
-			v.Id_str,
-			v.Media_url,
-			v.Media_url_https,
-			v.Url,
-			v.Display_url,
-			v.Expanded_url,
-			[]MediaSize{v.Sizes.Medium, v.Sizes.Thumb, v.Sizes.Small, v.Sizes.Large},
-			v.Type,
-			v.Indices,
-		}
+		v.Media_url = escapeUrl(v.Media_url)
+		v.Media_url_https = escapeUrl(v.Media_url_https)
+		v.Url = escapeUrl(v.Url)
+		v.Display_url = escapeUrl(v.Display_url)
+		v.Expanded_url = escapeUrl(v.Expanded_url)
+		v.Sizes = []MediaSize{v.Sizes.Medium, v.Sizes.Thumb, v.Sizes.Small, v.Sizes.Large}
+		archiveMedia[i] = v
 	}
 	return archiveMedia
+}
+
+func escapeUrl(url string) string {
+	return strings.Replace(url, "/", `\/`, -1)
+}
+
+func escapeEntityUrls(entity struct {
+	Indices      []int
+	Url          string
+	Display_url  string
+	Expanded_url string
+}) struct {
+	Indices      []int
+	Url          string
+	Display_url  string
+	Expanded_url string
+} {
+	entity.Url = escapeUrl(entity.Url)
+	entity.Display_url = escapeUrl(entity.Display_url)
+	entity.Expanded_url = escapeUrl(entity.Expanded_url)
+	return entity
+}
+
+func escapeUserUrls(u User) User {
+	u.ProfileBackgroundImageURL = escapeUrl(u.ProfileBackgroundImageURL)
+	u.ProfileBackgroundImageUrlHttps = escapeUrl(u.ProfileBackgroundImageUrlHttps)
+	u.ProfileImageURL = escapeUrl(u.ProfileImageURL)
+	u.ProfileImageUrlHttps = escapeUrl(u.ProfileImageUrlHttps)
+	u.URL = escapeUrl(u.URL)
+	return u
 }
