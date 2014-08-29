@@ -2,21 +2,21 @@ package anaconda
 
 type Entities struct {
 	Hashtags []struct {
-		Indices []int
-		Text    string
+		Indices []int  `json:",omitempty"`
+		Text    string `json:",omitempty"`
 	}
 	Urls []struct {
-		Indices      []int
-		Url          string
-		Display_url  string
-		Expanded_url string
+		Indices      []int  `json:",omitempty"`
+		Url          string `json:",omitempty"`
+		Display_url  string `json:",omitempty"`
+		Expanded_url string `json:",omitempty"`
 	}
 	User_mentions []struct {
-		Name        string
-		Indices     []int
-		Screen_name string
-		Id          int64
-		Id_str      string
+		Name        string `json:",omitempty"`
+		Indices     []int  `json:",omitempty"`
+		Screen_name string `json:",omitempty"`
+		Id          int64  `json:",omitempty"`
+		Id_str      string `json:",omitempty"`
 	}
 	Media []struct {
 		Id              int64
@@ -40,7 +40,7 @@ type MediaSizes struct {
 }
 
 type MediaSize struct {
-	W      int
-	H      int
-	Resize string
+	W      int    `json:",omitempty"`
+	H      int    `json:",omitempty"`
+	Resize string `json:",omitempty"`
 }
