@@ -38,7 +38,7 @@ func (t Tweet) CreatedAtTime() (time.Time, error) {
 
 // this is neccesary because there is *one minute difference* between Twitter API and archive JSON
 // See: https://github.com/Januzellij/anaconda/commit/9c9e6a07f65ea957b3107bee70c33c4f771e6577
-func convertToArchive(tweets []Tweet) []ArchiveTweet {
+func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 	archiveTweets := make([]ArchiveTweet, len(tweets))
 	for i, tweet := range tweets {
 		archiveTweet := ArchiveTweet{
