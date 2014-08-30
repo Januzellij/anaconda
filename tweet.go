@@ -147,13 +147,29 @@ func convertMediaToArchive(media []struct {
 		Indices         []int
 	}, len(media))
 	for i, v := range media {
-		v.Media_url = escapeUrl(v.Media_url)
-		v.Media_url_https = escapeUrl(v.Media_url_https)
-		v.Url = escapeUrl(v.Url)
-		v.Display_url = escapeUrl(v.Display_url)
-		v.Expanded_url = escapeUrl(v.Expanded_url)
-		v.Sizes = []MediaSize{v.Sizes.Medium, v.Sizes.Thumb, v.Sizes.Small, v.Sizes.Large}
-		archiveMedia[i] = v
+		archiveMedia[i] = struct {
+			Id              int64
+			Id_str          string
+			Media_url       string
+			Media_url_https string
+			Url             string
+			Display_url     string
+			Expanded_url    string
+			Sizes           []MediaSize
+			Type            string
+			Indices         []int
+		}{
+			v.Id,
+			v.Id_str,
+			escapeUrl(v.Media_url),
+			escapeUrl(v.Media_url_https),
+			escapeUrl(v.Url),
+			escapeUrl(v.Display_url),
+			escapeUrl(v.Expanded_url),
+			[]MediaSize{v.Sizes.Medium, v.Sizes.Thumb, v.Sizes.Small, v.Sizes.Large},
+			v.Type,
+			v.Indices,
+		}
 	}
 	return archiveMedia
 }
