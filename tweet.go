@@ -1,9 +1,6 @@
 package anaconda
 
-import (
-	"strings"
-	"time"
-)
+import "time"
 
 type Tweet struct {
 	Contributors         []int64     `json:"contributors"`
@@ -47,7 +44,7 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.CreatedAt,
 			ArchiveEntities{
 				tweet.Entities.Hashtags,
-				escapeEntityUrls(tweet.Entities.Urls),
+				tweet.Entities.Urls,
 				tweet.Entities.User_mentions,
 				convertMediaToArchive(tweet.Entities.Media),
 			},
@@ -67,9 +64,9 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.Retweeted,
 			nil,
 			tweet.Source,
-			escapeUrl(tweet.Text),
+			tweet.Text,
 			tweet.Truncated,
-			escapeUserUrls(tweet.User),
+			tweet.User,
 		}
 		if tweet.RetweetedStatus != nil {
 			archiveTweet.RetweetedStatus = &ArchiveTweet{
@@ -78,7 +75,7 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 				tweet.RetweetedStatus.CreatedAt,
 				ArchiveEntities{
 					tweet.RetweetedStatus.Entities.Hashtags,
-					escapeEntityUrls(tweet.RetweetedStatus.Entities.Urls),
+					tweet.RetweetedStatus.Entities.Urls,
 					tweet.RetweetedStatus.Entities.User_mentions,
 					convertMediaToArchive(tweet.RetweetedStatus.Entities.Media),
 				},
@@ -98,9 +95,9 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 				tweet.RetweetedStatus.Retweeted,
 				nil, // TODO: fix this, so it recursively fills in all retweets
 				tweet.RetweetedStatus.Source,
-				escapeUrl(tweet.RetweetedStatus.Text),
+				tweet.RetweetedStatus.Text,
 				tweet.RetweetedStatus.Truncated,
-				escapeUserUrls(tweet.RetweetedStatus.User),
+				tweet.RetweetedStatus.User,
 			}
 		}
 		archiveTweets[i] = archiveTweet
@@ -161,48 +158,15 @@ func convertMediaToArchive(media []struct {
 		}{
 			v.Id,
 			v.Id_str,
-			escapeUrl(v.Media_url),
-			escapeUrl(v.Media_url_https),
-			escapeUrl(v.Url),
-			escapeUrl(v.Display_url),
-			escapeUrl(v.Expanded_url),
+			v.Media_url,
+			v.Media_url_https,
+			v.Url,
+			v.Display_url,
+			v.Expanded_url,
 			[]MediaSize{v.Sizes.Medium, v.Sizes.Thumb, v.Sizes.Small, v.Sizes.Large},
 			v.Type,
 			v.Indices,
 		}
 	}
 	return archiveMedia
-}
-
-func escapeUrl(url string) string {
-	return strings.Replace(url, "/", `\/`, -1)
-}
-
-func escapeEntityUrls(entities []struct {
-	Indices      []int
-	Url          string
-	Display_url  string
-	Expanded_url string
-}) []struct {
-	Indices      []int
-	Url          string
-	Display_url  string
-	Expanded_url string
-} {
-	for i, v := range entities {
-		v.Url = escapeUrl(v.Url)
-		v.Display_url = escapeUrl(v.Display_url)
-		v.Expanded_url = escapeUrl(v.Expanded_url)
-		entities[i] = v
-	}
-	return entities
-}
-
-func escapeUserUrls(u User) User {
-	u.ProfileBackgroundImageURL = escapeUrl(u.ProfileBackgroundImageURL)
-	u.ProfileBackgroundImageUrlHttps = escapeUrl(u.ProfileBackgroundImageUrlHttps)
-	u.ProfileImageURL = escapeUrl(u.ProfileImageURL)
-	u.ProfileImageUrlHttps = escapeUrl(u.ProfileImageUrlHttps)
-	u.URL = escapeUrl(u.URL)
-	return u
 }
