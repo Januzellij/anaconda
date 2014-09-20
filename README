@@ -3,6 +3,8 @@ Anaconda
 
 [![GoDoc](https://godoc.org/github.com/ChimeraCoder/anaconda?status.png)](https://godoc.org/github.com/ChimeraCoder/anaconda)
 
+NOTE: This is my personal fork of Anaconda. It provides fixes to allow Anaconda to encode and decode the JSON of Twitter archives. 
+
 Anaconda is a simple, transparent Go package for accessing version 1.1 of the Twitter API. 
 
 Successful API queries return native Go structs that can be used immediately, with no need for type assertions.
