@@ -1,6 +1,10 @@
 package anaconda
 
-import "time"
+import (
+	"time"
+
+	"github.com/Januzellij/is"
+)
 
 type Tweet struct {
 	Contributors         []int64     `json:"contributors"`
@@ -33,8 +37,30 @@ func (t Tweet) CreatedAtTime() (time.Time, error) {
 	return time.Parse(time.RubyDate, t.CreatedAt)
 }
 
-// this is neccesary because there is *one minute difference* between Twitter API and archive JSON
-// See: https://github.com/Januzellij/anaconda/commit/9c9e6a07f65ea957b3107bee70c33c4f771e6577
+func properPlace(p Place) *Place {
+	if zero, _ := is.Zero(p); zero {
+		// we ignore the error because Place has no array fields
+		return nil
+	} else {
+		return &p
+	}
+}
+
+func properEntities(tweet Tweet) *ArchiveEntities {
+	if zero, _ := is.Zero(tweet.Entities); zero {
+		// we ignore the error because Entities has no array fields
+		return nil
+	} else {
+		return &ArchiveEntities{
+			tweet.Entities.Hashtags,
+			tweet.Entities.Urls,
+			tweet.Entities.User_mentions,
+			convertMediaToArchive(tweet.Entities.Media),
+		}
+	}
+}
+
+// ConvertToArchive converts every Tweet in a slice to it's corresponding ArchiveTweet
 func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 	archiveTweets := make([]ArchiveTweet, len(tweets))
 	for i, tweet := range tweets {
@@ -42,12 +68,7 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.Contributors,
 			tweet.Coordinates,
 			tweet.CreatedAt,
-			ArchiveEntities{
-				tweet.Entities.Hashtags,
-				tweet.Entities.Urls,
-				tweet.Entities.User_mentions,
-				convertMediaToArchive(tweet.Entities.Media),
-			},
+			properEntities(tweet),
 			tweet.FavoriteCount,
 			tweet.Favorited,
 			tweet.Geo,
@@ -58,7 +79,7 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.InReplyToStatusIdStr,
 			tweet.InReplyToUserID,
 			tweet.InReplyToUserIdStr,
-			tweet.Place,
+			properPlace(tweet.Place),
 			tweet.PossiblySensitive,
 			tweet.RetweetCount,
 			tweet.Retweeted,
@@ -68,17 +89,14 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 			tweet.Truncated,
 			tweet.User,
 		}
-		if tweet.RetweetedStatus != nil {
-			archiveTweet.RetweetedStatus = &ArchiveTweet{
+		currentTweet := tweet
+		currentArchiveTweet := archiveTweet
+		for currentTweet.RetweetedStatus != nil {
+			currentArchiveTweet.RetweetedStatus = &ArchiveTweet{
 				tweet.RetweetedStatus.Contributors,
 				tweet.RetweetedStatus.Coordinates,
 				tweet.RetweetedStatus.CreatedAt,
-				ArchiveEntities{
-					tweet.RetweetedStatus.Entities.Hashtags,
-					tweet.RetweetedStatus.Entities.Urls,
-					tweet.RetweetedStatus.Entities.User_mentions,
-					convertMediaToArchive(tweet.RetweetedStatus.Entities.Media),
-				},
+				properEntities(tweet),
 				tweet.RetweetedStatus.FavoriteCount,
 				tweet.RetweetedStatus.Favorited,
 				tweet.RetweetedStatus.Geo,
@@ -89,7 +107,7 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 				tweet.RetweetedStatus.InReplyToStatusIdStr,
 				tweet.RetweetedStatus.InReplyToUserID,
 				tweet.RetweetedStatus.InReplyToUserIdStr,
-				tweet.RetweetedStatus.Place,
+				properPlace(tweet.RetweetedStatus.Place),
 				tweet.RetweetedStatus.PossiblySensitive,
 				tweet.RetweetedStatus.RetweetCount,
 				tweet.RetweetedStatus.Retweeted,
@@ -99,6 +117,8 @@ func ConvertToArchive(tweets []Tweet) []ArchiveTweet {
 				tweet.RetweetedStatus.Truncated,
 				tweet.RetweetedStatus.User,
 			}
+			currentTweet = *currentTweet.RetweetedStatus
+			currentArchiveTweet = *currentArchiveTweet.RetweetedStatus
 		}
 		archiveTweets[i] = archiveTweet
 	}
